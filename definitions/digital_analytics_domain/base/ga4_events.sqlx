@@ -42,7 +42,7 @@ config {
   description: "View into GA4 exported tables. Not be used outside of the Dataform transformation jobs.",
   tags: ['ga4']
 }
-  
+
 SELECT
   --traffic_source dimension
   ${notNullString('traffic_source_medium', 'traffic_source_medium')},
@@ -195,5 +195,6 @@ WHERE ${excludeExtraDays}
     FORMAT_DATE("%Y%m%d", DATE_SUB(
       ld.latest_date,
       INTERVAL ${dataform.projectConfig.vars.ga4_metrics_lookback_days} DAY
+
     ))
 )
