@@ -42,6 +42,7 @@ config {
   description: "View into GA4 exported tables. Not be used outside of the Dataform transformation jobs.",
   tags: ['ga4']
 }
+
 SELECT
   --traffic_source dimension
   ${notNullString('traffic_source_medium', 'traffic_source_medium')},
@@ -183,15 +184,17 @@ SELECT
     is_active_user,
     _TABLE_SUFFIX as table_suffix
 FROM ${ref('events' + dataform.projectConfig.vars.ga4_export_table_suffix)}
+CROSS JOIN (    
+  SELECT MAX(SAFE.PARSE_DATE('%Y%m%d',_TABLE_SUFFIX)) as latest_date
+  FROM ${ref('events' + dataform.projectConfig.vars.ga4_export_table_suffix)}
+    -- Exclude extra day exports 
+  WHERE ${excludeExtraDays}
+  ) ld
 WHERE ${excludeExtraDays}
   AND _TABLE_SUFFIX > 
     FORMAT_DATE("%Y%m%d", DATE_SUB(
-      ((
-   SELECT MAX(SAFE.PARSE_DATE('%Y%m%d',_TABLE_SUFFIX))
-  FROM ${ref('events' + dataform.projectConfig.vars.ga4_export_table_suffix)}
-  -- Exclude extra day exports 
-  WHERE ${excludeExtraDays}
-)),
-      INTERVAL ${dataform.projectConfig.vars.ga4_incremental_processing_days_back} DAY
+      ld.latest_date,
+      INTERVAL ${dataform.projectConfig.vars.ga4_metrics_lookback_days} DAY
+
     ))
 )
