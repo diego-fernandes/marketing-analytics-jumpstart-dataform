@@ -29,7 +29,8 @@ WITH landing AS (
     campaign_bidding_strategy_type,
     bid_s_name,
     bidding_strategy_type,
-    bidding_strategy_target_roas_target_roas,
+    -- bidding_strategy_target_roas_target_roas,
+    target_roas,
     cost,
     revenue,
     data_date
